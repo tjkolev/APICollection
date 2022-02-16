@@ -1,0 +1,66 @@
+# https://github.com/MattTW/BlinkMonitorProtocol
+# https://github.com/fronzbot/blinkpy/blob/dev/blinkpy/api.py
+
+# Authentication:
+# Call /login
+# Get pin via SMS
+# Call /verify with pin
+# Login credentials in setting file
+
+###
+POST {{apiDomain}}/api/v4/account/{{accountId}}/client/{{clientId}}/logout
+
+
+###
+# @name login
+@loginUrl = https://rest-prod.immedia-semi.com/api/v5/account/login
+POST {{loginUrl}}
+Content-Type: application/json
+
+{
+    "unique_id": "{{blink-app-uid}}",
+    "email":"{{blink-email}}",
+    "password":"{{blink-pass}}"
+
+}
+
+### 
+@accountId = {{login.response.body.account.account_id}}
+@clientId = {{login.response.body.account.client_id}}
+@userId = {{login.response.body.account.user_id}}
+@authToken = {{login.response.body.auth.token}}
+@tier = {{login.response.body.account.tier}}
+@apiDomain = https://rest-{{tier}}.immedia-semi.com
+
+###
+@smsPin = 767905
+POST {{apiDomain}}/api/v4/account/{{accountId}}/client/{{clientId}}/pin/verify
+Content-Type: application/json
+TOKEN_AUTH: {{authToken}}
+
+{
+	"pin": "{{smsPin}}"
+}
+
+
+###
+# @name getNetworks
+GET {{apiDomain}}/networks
+Content-Type: application/json
+TOKEN_AUTH: {{authToken}}
+
+###
+
+###
+
+# @name getHome
+GET {{apiDomain}}/api/v3/accounts/{{accountId}}/homescreen
+Content-Type: application/json
+TOKEN_AUTH: {{authToken}}
+
+###
+@networkId = {{getHome.response.body.networks[0].id}}
+@cameraId = 94025
+GET {{apiDomain}}/network/{{networkId}}/camera/{{cameraId}}/config
+Content-Type: application/json
+TOKEN_AUTH: {{authToken}}
